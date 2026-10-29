@@ -22,9 +22,14 @@ CSS_FOLDER_ITEM_ICON = "[data-automationid=field-DocIcon]"
 # Words in the icon's src/alt/aria-label that mark a row as a folder
 FOLDER_ICON_KEYWORDS = ["folder", "ordner", "cartella"]
 
+# Selector for the pages in the PDF viewer
+# (each page is a div with an aria-label like "Page 3." laid over the canvas)
+CSS_PAGE = "div[class^='page_'][aria-label]"
+
 # CSS viewport used for rendering; the screenshot resolution is this times
 # the --scale factor (OneDrive fits the page into the viewport)
 VIEWPORT_SIZE = (1400, 1980)
+VIEWPORT_SIZE_LANDSCAPE = (1980, 1480)  # Extra height for the toolbar
 
 # Aria labels for navigation elements
 ARIA_LABELS_NEXT_PAGE = [

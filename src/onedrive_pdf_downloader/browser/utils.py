@@ -11,7 +11,10 @@ from selenium.common.exceptions import (  # noqa: E501 pylint: disable=line-too-
 )
 from selenium.webdriver.common.by import By
 
-from onedrive_pdf_downloader.browser.constants import CLASS_NAMES_TOOLBAR
+from onedrive_pdf_downloader.browser.constants import (
+    CLASS_NAMES_TOOLBAR,
+    CSS_PAGE,
+)
 
 
 def find_element(browser: webdriver, identifiers: list[str], by: By):
@@ -49,6 +52,49 @@ def find_element(browser: webdriver, identifiers: list[str], by: By):
     raise NoSuchElementException(
         f"No element found with any of the identifiers: {identifiers}"
     )
+
+
+def find_page(browser: webdriver, page_number: int):
+    """
+    Find the element of a page in the PDF viewer.
+
+    Args:
+        browser (webdriver): Browser instance
+        page_number (int): Number of the page, starting at 1
+
+    Returns:
+        WebElement | None: The page element, if it is rendered
+    """
+    return browser.execute_script(
+        "return [...document.querySelectorAll(arguments[0])].find("
+        "e => e.getAttribute('aria-label').endsWith(' ' + arguments[1] + '.'))"
+        " || null;",
+        CSS_PAGE, page_number,
+    )
+
+
+def go_to_first_page(browser: webdriver) -> None:
+    """
+    Scroll the PDF viewer back to the first page.
+
+    Args:
+        browser (webdriver): Browser instance
+
+    Raises:
+        NoSuchElementException: If the scrollable viewer is not found
+    """
+    scrolled = browser.execute_script(
+        "let e = document.querySelector(arguments[0]);"
+        "while (e && !(e.scrollHeight > e.clientHeight"
+        " && /(auto|scroll)/.test(getComputedStyle(e).overflowY)))"
+        " e = e.parentElement;"
+        "if (!e) return false;"
+        "e.scrollTop = 0;"
+        "return true;",
+        CSS_PAGE,
+    )
+    if not scrolled:
+        raise NoSuchElementException("No scrollable PDF viewer found")
 
 
 def hide_toolbar(browser: webdriver, class_names: list[str] = None) -> None:

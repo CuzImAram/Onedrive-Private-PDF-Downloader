@@ -11,7 +11,35 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
 
-from onedrive_pdf_downloader.browser.constants import VIEWPORT_SIZE
+from onedrive_pdf_downloader.browser.constants import (
+    VIEWPORT_SIZE,
+    VIEWPORT_SIZE_LANDSCAPE,
+)
+
+
+def set_viewport(browser: webdriver, args: argparse.Namespace,
+                 landscape: bool = False) -> bool:
+    """
+    Use a larger viewport with a higher pixel ratio, which makes OneDrive
+    render the PDF canvas at a higher resolution. Chrome only.
+
+    Args:
+        browser (webdriver): Browser instance
+        args (argparse.Namespace): Command line arguments
+        landscape (bool): Use a landscape viewport, for landscape pages
+
+    Returns:
+        bool: True if the viewport was changed
+    """
+    if args.browser != "chrome" or not args.scale or args.scale == 1:
+        return False
+    width, height = VIEWPORT_SIZE_LANDSCAPE if landscape else VIEWPORT_SIZE
+    browser.execute_cdp_cmd(
+        "Emulation.setDeviceMetricsOverride",
+        {"width": width, "height": height,
+         "deviceScaleFactor": args.scale, "mobile": False},
+    )
+    return True
 
 
 def create_browser(args: argparse.Namespace) -> webdriver:
@@ -48,15 +76,7 @@ def create_browser(args: argparse.Namespace) -> webdriver:
                 options.add_argument(
                     f"--profile-directory={args.profile_name}")
             browser = webdriver.Chrome(service=service, options=options)
-            if args.scale and args.scale != 1:
-                # A larger viewport with a higher pixel ratio makes OneDrive
-                # render the PDF canvas at a higher resolution
-                width, height = VIEWPORT_SIZE
-                browser.execute_cdp_cmd(
-                    "Emulation.setDeviceMetricsOverride",
-                    {"width": width, "height": height,
-                     "deviceScaleFactor": args.scale, "mobile": False},
-                )
+            if set_viewport(browser, args):
                 logging.info("Rendering at scale %s.", args.scale)
             return browser
 

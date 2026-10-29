@@ -12,14 +12,52 @@ import img2pdf
 from selenium.common.exceptions import (  # noqa: E501 pylint: disable=line-too-long
     JavascriptException,
     NoSuchElementException,
+    WebDriverException,
 )
 from selenium.webdriver.common.by import By
 
 from onedrive_pdf_downloader.browser.constants import (
     ARIA_LABELS_NEXT_PAGE,
     CLASS_NAMES_BANNER,
+    CSS_PAGE,
 )
-from onedrive_pdf_downloader.browser.utils import find_element, hide_toolbar
+from onedrive_pdf_downloader.browser.factory import set_viewport
+from onedrive_pdf_downloader.browser.utils import (
+    find_element,
+    find_page,
+    go_to_first_page,
+    hide_toolbar,
+)
+
+
+def prepare_viewer(args, browser) -> None:
+    """
+    Match the viewport to the page orientation and go to the first page.
+
+    The viewer remembers the last viewed position, so the document may not
+    open on the first page.
+
+    Args:
+        args (argparse.Namespace): Command line arguments
+        browser (webdriver): Browser instance
+    """
+    pages = browser.find_elements(By.CSS_SELECTOR, CSS_PAGE)
+    if pages:
+        size = pages[0].size
+        landscape = size["width"] > size["height"]
+        if set_viewport(browser, args, landscape=landscape):
+            logging.debug("Viewport set for %s pages.",
+                          "landscape" if landscape else "portrait")
+            sleep(3)  # Wait for the viewer to re-render
+
+    try:
+        go_to_first_page(browser)
+        sleep(3)
+    except (NoSuchElementException, WebDriverException):
+        logging.warning(
+            "Cannot jump to the first page, the export starts at the "
+            "currently visible page."
+        )
 
 
 def export_pdf(args, browser, total_of_pages, filename):
@@ -38,6 +76,8 @@ def export_pdf(args, browser, total_of_pages, filename):
     files_list = []
 
     with tempfile.TemporaryDirectory() as temp_dir:
+        prepare_viewer(args, browser)
+
         # Hide the toolbar for screenshots
         try:
             hide_toolbar(browser)
@@ -62,8 +102,14 @@ def export_pdf(args, browser, total_of_pages, filename):
             image_path = f"{temp_dir}/{str(page_number)}.png"
 
             try:
-                browser.find_element(
-                    By.CSS_SELECTOR, "canvas").screenshot(image_path)
+                # Capture only the current page; the canvas can also show
+                # parts of the pages before and after it
+                page = find_page(browser, page_number)
+                if page is None:
+                    logging.debug("Page element %d not found, capturing "
+                                  "the whole canvas.", page_number)
+                    page = browser.find_element(By.CSS_SELECTOR, "canvas")
+                page.screenshot(image_path)
             except NoSuchElementException:
                 logging.error(
                     "Cannot find the PDF canvas within the page. "
