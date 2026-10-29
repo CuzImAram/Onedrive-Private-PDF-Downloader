@@ -15,7 +15,10 @@ from selenium.common.exceptions import (  # noqa: E501 pylint: disable=line-too-
 )
 from selenium.webdriver.common.by import By
 
-from onedrive_pdf_downloader.browser.constants import ARIA_LABELS_NEXT_PAGE
+from onedrive_pdf_downloader.browser.constants import (
+    ARIA_LABELS_NEXT_PAGE,
+    CLASS_NAMES_BANNER,
+)
 from onedrive_pdf_downloader.browser.utils import find_element, hide_toolbar
 
 
@@ -44,6 +47,13 @@ def export_pdf(args, browser, total_of_pages, filename):
                 "The toolbar is not visible or class names are not up-to-date. "  # noqa: E501 pylint: disable=line-too-long
                 "Screenshots might contain the toolbar."
             )
+
+        # Hide the banner if present (not every file shows one)
+        try:
+            hide_toolbar(browser, CLASS_NAMES_BANNER)
+            logging.info("Banner hidden for clean screenshots.")
+        except NoSuchElementException:
+            logging.debug("No banner found to hide.")
 
         # Process each page
         page_number = 1

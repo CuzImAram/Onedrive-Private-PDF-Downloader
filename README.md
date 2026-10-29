@@ -31,6 +31,7 @@ This project allows you to export PDFs, even those that are protected, from auth
 - Can optionally keep or delete temporary images used for PDF creation.
 - Compatible with browser profiles to retain session data (useful for skipping the login).
 - Support for Raw lossless PDFs
+- Export all PDFs of a folder link, recursively
 
 ![separator](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)
 
@@ -111,10 +112,19 @@ onedrive-pdf-downloader [options]
 | `--browser, -b`      | Specify the browser to use (`firefox` or `chrome`).                                      | `--browser firefox`                 |
 | `--profile-dir, -p`  | Path to the browser profile directory. If using Chrome, specify the user data directory. | `--profile-dir /path/to/profile`    |
 | `--profile-name, -n` | Profile name to use (Chrome only).                                                       | `--profile-name "Profile 1"`        |
+| `--scale, -s`        | Render scale for sharper pages (Chrome only, default `2`, `1` = old behaviour).          | `--scale 3`                         |
 | `--keep-imgs, -k`    | Keep the temporary images used for PDF creation.                                         | `--keep-imgs`                       |
-| `--output-file, -o`  | Specify the output file name.                                                            | `--output-file file.pdf`            |
+| `--output-file, -o`  | Specify the output file name. For folder links, the output directory.                    | `--output-file file.pdf`            |
 | `--cache-dir, -r`    | Search in browser caches for RAW Lossless PDFs (Firefox only).                           | `--cache-dir /path/to/cache`        |
-| `url`                | The URL of the PDF file. This is a required argument.                                    | `https://blabla.sharepoint.com/...` |
+| `url`                | The URL of the PDF file or of a folder. This is a required argument.                     | `https://blabla.sharepoint.com/...` |
+
+### 📁 Folder Links
+
+If the URL points to a folder instead of a PDF, every PDF inside it and in all of its subfolders is exported. The folder structure is recreated locally (in a directory named after the folder, or in `--output-file` if given). PDFs that already exist locally are skipped, so an interrupted run can be resumed by starting it again.
+
+### 🔍 Image Quality
+
+The PDFs are built from screenshots, so the pages are images, not vector graphics. With Chrome, `--scale` makes OneDrive render the pages bigger (about 2800 px wide at the default `2`) so they stay sharp when zooming in. Higher values give sharper pages but bigger files.
 
 ### 🗑️ Uninstall
 

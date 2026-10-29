@@ -14,6 +14,7 @@ from onedrive_pdf_downloader.browser.constants import (
     CLASS_NAMES_TOTAL_PAGES,
 )
 from onedrive_pdf_downloader.core.export import export_pdf
+from onedrive_pdf_downloader.core.folder import export_folder, get_item_path
 
 
 def get_total_pages(browser) -> int:
@@ -27,8 +28,10 @@ def get_total_pages(browser) -> int:
         int: Total number of pages
     """
     try:
+        # textContent works even when the toolbar has faded out
         total_text = find_element(
-            browser, CLASS_NAMES_TOTAL_PAGES, By.CLASS_NAME).text
+            browser, CLASS_NAMES_TOTAL_PAGES, By.CLASS_NAME
+        ).get_attribute("textContent")
         total_of_pages = int(total_text.replace("/", ""))
         logging.info("Total number of pages detected: %d", total_of_pages)
     except (ValueError, NoSuchElementException):
@@ -54,6 +57,12 @@ def get_output_filename(args, browser) -> str:
     """
     if args.output_file:
         return args.output_file
+
+    # The viewer title element may be truncated ("abc...xyz.pdf"),
+    # while the document title holds the full file name
+    if browser.title.lower().endswith(".pdf"):
+        logging.info("Detected file name: '%s'", browser.title)
+        return browser.title
 
     try:
         filename = find_element(
@@ -89,6 +98,13 @@ def export_pdf_workflow(args):
             "Keep the browser in the foreground for better results.\n> [ENTER] "  # noqa: E501 pylint: disable=line-too-long
         )
         sleep(2)  # Give a moment after user input before proceeding
+
+        # A folder link exports every PDF inside it, recursively
+        folder_path = get_item_path(browser.current_url) or get_item_path(
+            args.url)
+        if folder_path and not browser.title.lower().endswith(".pdf"):
+            logging.info("Folder detected: '%s'", folder_path)
+            return export_folder(args, browser, args.url, folder_path)
 
         # Get number of pages and filename
         total_of_pages = get_total_pages(browser)

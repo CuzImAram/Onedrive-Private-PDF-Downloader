@@ -55,9 +55,16 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-file", "-o",
         type=str,
-        help="Specify the output file name",
+        help="Specify the output file name (output directory for folder links)",
         required=False,
         metavar="FILE",
+    )
+    parser.add_argument(
+        "--scale", "-s",
+        type=float,
+        help="Render scale for sharper pages, only for Chrome (default: 2, 1 = old behaviour)",  # noqa: E501 pylint: disable=line-too-long
+        default=2.0,
+        metavar="FACTOR",
     )
     parser.add_argument(
         "--keep-imgs", "-k",
@@ -90,7 +97,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "url",
         type=str,
-        help="URL of the PDF file"
+        help="URL of the PDF file, or of a folder to export all its PDFs recursively"  # noqa: E501 pylint: disable=line-too-long
     )
 
     return parser
