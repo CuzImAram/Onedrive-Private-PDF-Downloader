@@ -11,6 +11,9 @@ CLASS_NAMES_FILE_NAME = [
 CLASS_NAMES_TOOLBAR = ["root_4196ef6e", "root_5a88b9b2"]
 # Banners over the page, e.g. "This file is protected" for PDFs with an owner password
 CLASS_NAMES_BANNER = ["topArea_7516adf3"]
+# Side panel with the table of contents, opened over the page for PDFs
+# with bookmarks
+CLASS_NAMES_SIDE_PANEL = ["root_6bc3ea1c"]
 
 # Selectors for the folder list view (data-automationid values are stable)
 CSS_FOLDER_ROW = (

@@ -19,6 +19,7 @@ from selenium.webdriver.common.by import By
 from onedrive_pdf_downloader.browser.constants import (
     ARIA_LABELS_NEXT_PAGE,
     CLASS_NAMES_BANNER,
+    CLASS_NAMES_SIDE_PANEL,
     CSS_PAGE,
 )
 from onedrive_pdf_downloader.browser.factory import set_viewport
@@ -26,6 +27,7 @@ from onedrive_pdf_downloader.browser.utils import (
     find_element,
     find_page,
     go_to_first_page,
+    hide_class_names,
     hide_toolbar,
 )
 
@@ -94,6 +96,9 @@ def export_pdf(args, browser, total_of_pages, filename):
             logging.info("Banner hidden for clean screenshots.")
         except NoSuchElementException:
             logging.debug("No banner found to hide.")
+
+        # The table of contents panel can open at any time, hide it for good
+        hide_class_names(browser, CLASS_NAMES_SIDE_PANEL)
 
         # Process each page
         page_number = 1

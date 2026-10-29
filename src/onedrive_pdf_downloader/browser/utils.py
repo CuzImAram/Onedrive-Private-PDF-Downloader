@@ -97,6 +97,25 @@ def go_to_first_page(browser: webdriver) -> None:
         raise NoSuchElementException("No scrollable PDF viewer found")
 
 
+def hide_class_names(browser: webdriver, class_names: list[str]) -> None:
+    """
+    Hide all elements with the given class names, including elements that
+    are only added to the page later.
+
+    Args:
+        browser (webdriver): Browser instance
+        class_names (list[str]): List of class names to hide
+    """
+    browser.execute_script(
+        "const style = document.createElement('style');"
+        "style.textContent = arguments[0].map(c => '.' + c).join(',')"
+        " + '{visibility: hidden !important}';"
+        "document.head.appendChild(style);",
+        class_names,
+    )
+    logging.debug("Elements hidden using class names: %s", class_names)
+
+
 def hide_toolbar(browser: webdriver, class_names: list[str] = None) -> None:
     """
     Hide the toolbar to get clean screenshots.
