@@ -71,6 +71,11 @@ def create_browser(args: argparse.Namespace) -> webdriver:
         case "chrome":
             options = webdriver.ChromeOptions()
             service = ChromeService(log_path=os.devnull)
+            # Keep Chrome's own log messages (e.g. from the updater) out of
+            # the terminal, they hide the prompt
+            options.add_experimental_option(
+                "excludeSwitches", ["enable-logging"])
+            options.add_argument("--log-level=3")
             if args.profile_dir and args.profile_name:
                 options.add_argument(f"user-data-dir={args.profile_dir}")
                 options.add_argument(
