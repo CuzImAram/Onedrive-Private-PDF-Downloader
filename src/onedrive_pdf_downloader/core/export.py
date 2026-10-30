@@ -23,6 +23,7 @@ from onedrive_pdf_downloader.browser.constants import (
     CSS_PAGE,
 )
 from onedrive_pdf_downloader.browser.factory import set_viewport
+from onedrive_pdf_downloader.core.orientation import fix_pdf_rotation
 from onedrive_pdf_downloader.browser.utils import (
     find_element,
     find_page,
@@ -152,6 +153,10 @@ def export_pdf(args, browser, total_of_pages, filename):
             logging.info("Saving the file as '%s'.", filename)
             with open(filename, "wb") as out_file:
                 out_file.write(img2pdf.convert(files_list))
+
+            # Scanned pages can be sideways or upside down
+            if not args.no_rotate:
+                fix_pdf_rotation(filename)
 
             # Save images if requested
             if args.keep_imgs:

@@ -73,6 +73,20 @@ def create_parser() -> argparse.ArgumentParser:
         default=False,
     )
 
+    parser.add_argument(
+        "--no-rotate",
+        action="store_true",
+        help="Do not turn sideways or upside down pages upright",
+        default=False,
+    )
+    parser.add_argument(
+        "--fix-rotation",
+        type=str,
+        help="Only turn the pages of an existing PDF, or of all PDFs in a folder, upright (no URL needed)",  # noqa: E501 pylint: disable=line-too-long
+        default=None,
+        metavar="PATH",
+    )
+
     # Cache options
     parser.add_argument(
         "--cache-dir", "-r",
@@ -97,6 +111,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "url",
         type=str,
+        nargs="?",
         help="URL of the PDF file, or of a folder to export all its PDFs recursively"  # noqa: E501 pylint: disable=line-too-long
     )
 

@@ -32,6 +32,7 @@ This project allows you to export PDFs, even those that are protected, from auth
 - Compatible with browser profiles to retain session data (useful for skipping the login).
 - Support for Raw lossless PDFs
 - Export all PDFs of a folder link, recursively
+- Turns sideways or upside down scanned pages upright
 
 ![separator](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)
 
@@ -85,6 +86,10 @@ Ensure the drivers are in your system’s `PATH` or specify their location expli
     ```bash
     pip install onedrive_pdf_downloader
     ```
+    To also turn scanned pages upright (see [Page Orientation](#-page-orientation)), install the `rotate` extra:
+    ```bash
+    pip install "onedrive_pdf_downloader[rotate]"
+    ```
 
 2. Download and install the appropriate browser drivers for your browser.
 
@@ -114,9 +119,11 @@ onedrive-pdf-downloader [options]
 | `--profile-name, -n` | Profile name to use (Chrome only).                                                       | `--profile-name "Profile 1"`        |
 | `--scale, -s`        | Render scale for sharper pages (Chrome only, default `2`, `1` = old behaviour).          | `--scale 3`                         |
 | `--keep-imgs, -k`    | Keep the temporary images used for PDF creation.                                         | `--keep-imgs`                       |
+| `--no-rotate`        | Do not turn sideways or upside down pages upright.                                       | `--no-rotate`                       |
+| `--fix-rotation`     | Only turn the pages of an existing PDF, or of all PDFs in a folder, upright (no URL).    | `--fix-rotation ./exams`            |
 | `--output-file, -o`  | Specify the output file name. For folder links, the output directory.                    | `--output-file file.pdf`            |
 | `--cache-dir, -r`    | Search in browser caches for RAW Lossless PDFs (Firefox only).                           | `--cache-dir /path/to/cache`        |
-| `url`                | The URL of the PDF file or of a folder. This is a required argument.                     | `https://blabla.sharepoint.com/...` |
+| `url`                | The URL of the PDF file or of a folder. Required, unless `--fix-rotation` is used.       | `https://blabla.sharepoint.com/...` |
 
 ### 📁 Folder Links
 
@@ -125,6 +132,16 @@ If the URL points to a folder instead of a PDF, every PDF inside it and in all o
 ### 🔍 Image Quality
 
 The PDFs are built from screenshots, so the pages are images, not vector graphics. With Chrome, `--scale` makes OneDrive render the pages bigger (about 2800 px wide at the default `2`) so they stay sharp when zooming in. Higher values give sharper pages but bigger files.
+
+### 🔄 Page Orientation
+
+Scanned documents often contain pages that are sideways or upside down. If the `rotate` extra is installed, every exported page is checked with OCR ([RapidOCR](https://github.com/RapidAI/RapidOCR), runs locally) and turned upright. The rotation is stored in the PDF, so the image quality is not affected. Checking takes a few seconds per page; use `--no-rotate` to skip it.
+
+PDFs that were exported before can be fixed without the browser:
+
+```bash
+onedrive-pdf-downloader --fix-rotation path/to/file-or-folder
+```
 
 ### 🗑️ Uninstall
 

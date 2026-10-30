@@ -8,6 +8,7 @@ import sys
 
 from onedrive_pdf_downloader.cli import create_parser
 from onedrive_pdf_downloader.core import export_pdf_workflow
+from onedrive_pdf_downloader.core.orientation import fix_rotation
 from onedrive_pdf_downloader.logging_config import setup_logging
 from onedrive_pdf_downloader.utils import copy_cached_pdf
 
@@ -16,11 +17,18 @@ def main() -> None:
     """Main function to execute the PDF export workflow."""
     parser = create_parser()
     args = parser.parse_args()
+    if not args.url and not args.fix_rotation:
+        parser.error("the URL is required, unless --fix-rotation is used")
 
     # Setup logging based on debug flag
     setup_logging(debug_mode=args.debug)
 
     try:
+        if args.fix_rotation:
+            fix_rotation(args.fix_rotation)
+            return 0
+
+
         # Try to find PDF in cache if requested
         if args.cache_dir and args.browser == "firefox":
             logging.info(
